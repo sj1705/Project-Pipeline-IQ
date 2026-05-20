@@ -39,3 +39,38 @@ class Chunk(Base):
 
     def __repr__(self):
         return f"<Chunk {self.id} of {self.document_id}>"
+
+
+class QueryLog(Base):
+    __tablename__ = "query_logs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    query = Column(Text, nullable=False)
+    response = Column(Text, nullable=True)
+    model_used = Column(String(50), nullable=True)
+    latency_ms = Column(Float, nullable=True)
+    token_count = Column(Integer, nullable=True)
+    cost = Column(Float, nullable=True)
+    retrieval_scores = Column(JSON, nullable=True)
+    evaluation_scores = Column(JSON, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<QueryLog {self.id} model={self.model_used}>"
+
+
+class PipelineConfig(Base):
+    __tablename__ = "pipeline_configs"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    version = Column(Integer, nullable=False)
+    chunk_size = Column(Integer, default=512)
+    chunk_overlap = Column(Integer, default=50)
+    top_k = Column(Integer, default=5)
+    rerank_weight = Column(Float, default=0.5)
+    routing_threshold = Column(Float, default=0.5)
+    is_active = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<PipelineConfig v{self.version} active={self.is_active}>"
