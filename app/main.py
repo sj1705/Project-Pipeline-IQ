@@ -2,8 +2,8 @@ from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.config import settings
-from app.models.database import engine, get_db
-from app.models.schemas import Base  # import Base which now knows about our tables
+from app.models.database import engine, get_db, init_db
+from app.models.schemas import Base
 
 app = FastAPI(
     title=settings.app_name,
@@ -11,8 +11,8 @@ app = FastAPI(
     version="0.1.0",
 )
 
-# Create tables on startup
-Base.metadata.create_all(bind=engine)
+# Create pgvector extension + tables on startup
+init_db()
 
 
 @app.get("/")
