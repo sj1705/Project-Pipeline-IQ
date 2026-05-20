@@ -7,6 +7,8 @@ from app.models.database import engine, get_db, init_db
 from app.models.schemas import Base, Document
 from app.services.storage_service import storage_service
 from app.pipeline.ingestion import parse_document
+from app.pipeline.chunking import TextChunker
+
 
 app = FastAPI(
     title=settings.app_name,
@@ -15,6 +17,9 @@ app = FastAPI(
 )
 
 init_db()
+
+chunker = TextChunker(chunk_size=512, chunk_overlap=50)
+
 
 
 @app.get("/")
