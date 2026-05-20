@@ -9,6 +9,9 @@ __pycache__/
 dist/
 build/
 
+# Uploads
+uploads/
+
 # Environment variables
 .env
 
