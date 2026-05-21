@@ -13,6 +13,7 @@ from app.pipeline.retrieval import vector_search
 from pydantic import BaseModel
 from app.pipeline.generation import llm_service
 from app.routing.query_router import query_router
+from app.pipeline.retrieval import vector_search, hybrid_search
 
 
 app = FastAPI(
@@ -115,8 +116,8 @@ def search_chunks(request: QueryRequest, db: Session = Depends(get_db)):
 
 @app.post("/query")
 def query_document(request: QueryRequest, db: Session = Depends(get_db)):
-    # Step 1: Retrieve relevant chunks
-    context_chunks = vector_search(request.query, db, top_k=request.top_k)
+    # Step 1: Retrieve relevant chunks using HYBRID search
+    context_chunks = hybrid_search(request.query, db, top_k=request.top_k)
 
     if not context_chunks:
         return {
@@ -145,7 +146,8 @@ def query_document(request: QueryRequest, db: Session = Depends(get_db)):
         "sources": [
             {
                 "content": chunk["content"][:200],
-                "similarity": chunk["similarity"],
+                "similarity": chunk.get("similarity", 0),
+                "rrf_score": chunk.get("rrf_score", 0),
             }
             for chunk in context_chunks
         ],
