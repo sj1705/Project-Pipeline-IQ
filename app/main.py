@@ -11,6 +11,7 @@ from app.pipeline.chunking import TextChunker
 from app.pipeline.embedding import embedding_service
 from app.pipeline.retrieval import vector_search
 from pydantic import BaseModel
+from app.pipeline.generation import llm_service
 
 
 app = FastAPI(
@@ -110,3 +111,35 @@ def search_chunks(request: QueryRequest, db: Session = Depends(get_db)):
         "num_results": len(results),
         "results": results,
     }
+
+@app.post("/query")
+def query_document(request: QueryRequest, db: Session = Depends(get_db)):
+    # Step 1: Retrieve relevant chunks
+    context_chunks = vector_search(request.query, db, top_k=request.top_k)
+
+    if not context_chunks:
+        return {
+            "question": request.query,
+            "answer": "No documents found. Please ingest relevant documents to get answers.",
+            "sources": [],
+        }
+
+    # Step 2: Generate answer using LLM
+    llm_response = llm_service.generate_response(request.query, context_chunks)
+
+    return {
+        "question": request.query,
+        "answer": llm_response["answer"],
+        "model_used": llm_response["model_used"],
+        "input_tokens": llm_response["input_tokens"],
+        "output_tokens": llm_response["output_tokens"],
+        "num_sources": len(context_chunks),
+        "sources": [
+            {
+                "content": chunk["content"][:200],
+                "similarity": chunk["similarity"],
+            }
+            for chunk in context_chunks
+        ],
+    }
+        

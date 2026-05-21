@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     # Embedding
     embedding_model_id: str = "amazon.titan-embed-text-v2:0"
     embedding_dimensions: int = 1024
+
+    # LLM
+    llm_model_id: str = "anthropic.claude-3-haiku-20240307-v1:0"
+
+
     # AWS
     aws_region: str = "ap-south-1"
     aws_access_key_id: str = ""
