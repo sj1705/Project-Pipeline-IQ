@@ -4,11 +4,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.config import settings
 from app.models.database import engine, get_db, init_db
-from app.models.schemas import Base, Document
+from app.models.schemas import Base, Document, Chunk
 from app.services.storage_service import storage_service
 from app.pipeline.ingestion import parse_document
 from app.pipeline.chunking import TextChunker
-
+from app.pipeline.embedding import embedding_service
 
 app = FastAPI(
     title=settings.app_name,
@@ -19,7 +19,6 @@ app = FastAPI(
 init_db()
 
 chunker = TextChunker(chunk_size=512, chunk_overlap=50)
-
 
 
 @app.get("/")
@@ -56,20 +55,41 @@ def ingest_document(file: UploadFile = File(...), db: Session = Depends(get_db))
     # Extract text
     extracted_text = parse_document(saved_path, file_type)
 
+    # Chunk the text
+    chunks = chunker.chunk_text(extracted_text)
+
+    # Generate embeddings for all chunks
+    embeddings = embedding_service.generate_embeddings_batch(chunks)
+
     # Save document record to DB
     doc = Document(
         filename=filename,
         file_type=file_type,
         s3_path=saved_path,
+        chunk_config={"chunk_size": 512, "chunk_overlap": 50},
     )
     db.add(doc)
     db.commit()
     db.refresh(doc)
+
+    # Save chunks + embeddings to DB
+    for i, (chunk_text, embedding) in enumerate(zip(chunks, embeddings)):
+        chunk = Chunk(
+            document_id=doc.id,
+            content=chunk_text,
+            embedding=embedding,
+            chunk_index=i,
+            chunk_size=len(chunk_text),
+            overlap=50,
+        )
+        db.add(chunk)
+    db.commit()
 
     return {
         "document_id": str(doc.id),
         "filename": filename,
         "file_type": file_type,
         "text_length": len(extracted_text),
-        "preview": extracted_text[:500],  # first 500 chars as preview
+        "num_chunks": len(chunks),
+        "message": "Document ingested and embedded successfully",
     }
