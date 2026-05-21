@@ -12,6 +12,7 @@ from app.pipeline.embedding import embedding_service
 from app.pipeline.retrieval import vector_search
 from pydantic import BaseModel
 from app.pipeline.generation import llm_service
+from app.routing.query_router import query_router
 
 
 app = FastAPI(
@@ -124,13 +125,20 @@ def query_document(request: QueryRequest, db: Session = Depends(get_db)):
             "sources": [],
         }
 
-    # Step 2: Generate answer using LLM
-    llm_response = llm_service.generate_response(request.query, context_chunks)
+    # Step 2: Route query to appropriate model
+    routing = query_router.classify_complexity(request.query, context_chunks)
+
+    # Step 3: Generate answer using routed model
+    llm_response = llm_service.generate_response(
+        request.query, context_chunks, model_id=routing["model"]
+    )
 
     return {
         "question": request.query,
         "answer": llm_response["answer"],
         "model_used": llm_response["model_used"],
+        "complexity": routing["complexity"],
+        "complexity_score": routing["score"],
         "input_tokens": llm_response["input_tokens"],
         "output_tokens": llm_response["output_tokens"],
         "num_sources": len(context_chunks),
@@ -142,4 +150,3 @@ def query_document(request: QueryRequest, db: Session = Depends(get_db)):
             for chunk in context_chunks
         ],
     }
-        

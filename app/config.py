@@ -17,8 +17,9 @@ class Settings(BaseSettings):
     embedding_dimensions: int = 1024
 
     # LLM
+    # LLM
     llm_model_id: str = "anthropic.claude-3-haiku-20240307-v1:0"
-
+    llm_model_complex: str = "anthropic.claude-3-sonnet-20240229-v1:0"
 
     # AWS
     aws_region: str = "ap-south-1"
