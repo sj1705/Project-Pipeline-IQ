@@ -9,6 +9,9 @@ from app.services.storage_service import storage_service
 from app.pipeline.ingestion import parse_document
 from app.pipeline.chunking import TextChunker
 from app.pipeline.embedding import embedding_service
+from app.pipeline.retrieval import vector_search
+from pydantic import BaseModel
+
 
 app = FastAPI(
     title=settings.app_name,
@@ -92,4 +95,18 @@ def ingest_document(file: UploadFile = File(...), db: Session = Depends(get_db))
         "text_length": len(extracted_text),
         "num_chunks": len(chunks),
         "message": "Document ingested and embedded successfully",
+    }
+
+
+class QueryRequest(BaseModel):
+    query: str
+    top_k: int = 5
+
+@app.post("/search")
+def search_chunks(request: QueryRequest, db: Session = Depends(get_db)):
+    results = vector_search(request.query, db, top_k=request.top_k)
+    return {
+        "question": request.query,
+        "num_results": len(results),
+        "results": results,
     }

@@ -11,7 +11,10 @@ class Settings(BaseSettings):
 
     # Redis
     redis_url: str = "redis://localhost:6379/0"
-
+    # Embedding
+    # Embedding
+    embedding_model_id: str = "amazon.titan-embed-text-v2:0"
+    embedding_dimensions: int = 1024
     # AWS
     aws_region: str = "ap-south-1"
     aws_access_key_id: str = ""

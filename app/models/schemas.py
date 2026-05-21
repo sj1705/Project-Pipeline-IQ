@@ -29,7 +29,7 @@ class Chunk(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     document_id = Column(UUID(as_uuid=True), ForeignKey("documents.id"), nullable=False)
     content = Column(Text, nullable=False)
-    embedding = Column(Vector(1536), nullable=True)
+    embedding = Column(Vector(1024), nullable=True)  # changed from 1536 to 1024
     chunk_index = Column(Integer, nullable=False)
     chunk_size = Column(Integer, nullable=False)
     overlap = Column(Integer, default=0)
