@@ -16,6 +16,7 @@ from app.routing.query_router import query_router
 from app.pipeline.retrieval import vector_search, hybrid_search
 from app.evaluation.ragas_eval import rag_evaluator
 from app.evaluation.latency_tracker import LatencyTracker
+from app.evaluation.cost_tracker import cost_tracker
 
 
 app = FastAPI(
@@ -157,6 +158,13 @@ async def query_document(request: QueryRequest, db: Session = Depends(get_db)):
     eval_scores = await rag_evaluator._async_evaluate(sample)
     tracker.end("evaluation")
 
+        # Step 5: Calculate cost
+    query_cost = cost_tracker.calculate_cost(
+        model_id=llm_response["model_used"],
+        input_tokens=llm_response["input_tokens"],
+        output_tokens=llm_response["output_tokens"],
+    )
+
     return {
         "question": request.query,
         "answer": llm_response["answer"],
@@ -167,6 +175,7 @@ async def query_document(request: QueryRequest, db: Session = Depends(get_db)):
         "output_tokens": llm_response["output_tokens"],
         "evaluation": eval_scores,
         "latency": tracker.get_report(),
+        "cost": query_cost,
         "num_sources": len(context_chunks),
         "sources": [
             {
