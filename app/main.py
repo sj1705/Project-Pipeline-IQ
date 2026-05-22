@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from app.pipeline.generation import llm_service
 from app.routing.query_router import query_router
 from app.pipeline.retrieval import vector_search, hybrid_search
+from app.evaluation.ragas_eval import rag_evaluator
 
 
 app = FastAPI(
@@ -33,7 +34,7 @@ def root():
 
 
 @app.get("/health")
-def health_check(db: Session = Depends(get_db)):
+async def health_check(db: Session = Depends(get_db)):
     try:
         db.execute(text("SELECT 1"))
         db_status = "connected"
@@ -47,7 +48,7 @@ def health_check(db: Session = Depends(get_db)):
 
 
 @app.post("/ingest")
-def ingest_document(file: UploadFile = File(...), db: Session = Depends(get_db)):
+async def ingest_document(file: UploadFile = File(...), db: Session = Depends(get_db)):
     # Validate file type
     filename = file.filename
     file_type = filename.rsplit(".", 1)[-1].lower()
@@ -106,7 +107,7 @@ class QueryRequest(BaseModel):
     top_k: int = 5
 
 @app.post("/search")
-def search_chunks(request: QueryRequest, db: Session = Depends(get_db)):
+async def search_chunks(request: QueryRequest, db: Session = Depends(get_db)):
     results = vector_search(request.query, db, top_k=request.top_k)
     return {
         "question": request.query,
@@ -115,7 +116,7 @@ def search_chunks(request: QueryRequest, db: Session = Depends(get_db)):
     }
 
 @app.post("/query")
-def query_document(request: QueryRequest, db: Session = Depends(get_db)):
+async def query_document(request: QueryRequest, db: Session = Depends(get_db)):
     # Step 1: Retrieve relevant chunks using HYBRID search
     context_chunks = hybrid_search(request.query, db, top_k=request.top_k)
 
@@ -134,6 +135,16 @@ def query_document(request: QueryRequest, db: Session = Depends(get_db)):
         request.query, context_chunks, model_id=routing["model"]
     )
 
+    # Step 4: Evaluate response quality
+    contexts = [chunk["content"] for chunk in context_chunks]
+    from ragas import SingleTurnSample
+    sample = SingleTurnSample(
+        user_input=request.query,
+        response=llm_response["answer"],
+        retrieved_contexts=contexts,
+    )
+    eval_scores = await rag_evaluator._async_evaluate(sample)
+
     return {
         "question": request.query,
         "answer": llm_response["answer"],
@@ -142,6 +153,7 @@ def query_document(request: QueryRequest, db: Session = Depends(get_db)):
         "complexity_score": routing["score"],
         "input_tokens": llm_response["input_tokens"],
         "output_tokens": llm_response["output_tokens"],
+        "evaluation": eval_scores,
         "num_sources": len(context_chunks),
         "sources": [
             {
