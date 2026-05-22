@@ -15,6 +15,7 @@ from app.pipeline.generation import llm_service
 from app.routing.query_router import query_router
 from app.pipeline.retrieval import vector_search, hybrid_search
 from app.evaluation.ragas_eval import rag_evaluator
+from app.evaluation.latency_tracker import LatencyTracker
 
 
 app = FastAPI(
@@ -117,8 +118,13 @@ async def search_chunks(request: QueryRequest, db: Session = Depends(get_db)):
 
 @app.post("/query")
 async def query_document(request: QueryRequest, db: Session = Depends(get_db)):
-    # Step 1: Retrieve relevant chunks using HYBRID search
+    # Initialize latency tracker for this request
+    tracker = LatencyTracker()
+
+    # Step 1: Retrieve relevant chunks using hybrid search
+    tracker.start("retrieval")
     context_chunks = hybrid_search(request.query, db, top_k=request.top_k)
+    tracker.end("retrieval")
 
     if not context_chunks:
         return {
@@ -128,14 +134,19 @@ async def query_document(request: QueryRequest, db: Session = Depends(get_db)):
         }
 
     # Step 2: Route query to appropriate model
+    tracker.start("routing")
     routing = query_router.classify_complexity(request.query, context_chunks)
+    tracker.end("routing")
 
     # Step 3: Generate answer using routed model
+    tracker.start("generation")
     llm_response = llm_service.generate_response(
         request.query, context_chunks, model_id=routing["model"]
     )
+    tracker.end("generation")
 
     # Step 4: Evaluate response quality
+    tracker.start("evaluation")
     contexts = [chunk["content"] for chunk in context_chunks]
     from ragas import SingleTurnSample
     sample = SingleTurnSample(
@@ -144,6 +155,7 @@ async def query_document(request: QueryRequest, db: Session = Depends(get_db)):
         retrieved_contexts=contexts,
     )
     eval_scores = await rag_evaluator._async_evaluate(sample)
+    tracker.end("evaluation")
 
     return {
         "question": request.query,
@@ -154,6 +166,7 @@ async def query_document(request: QueryRequest, db: Session = Depends(get_db)):
         "input_tokens": llm_response["input_tokens"],
         "output_tokens": llm_response["output_tokens"],
         "evaluation": eval_scores,
+        "latency": tracker.get_report(),
         "num_sources": len(context_chunks),
         "sources": [
             {
