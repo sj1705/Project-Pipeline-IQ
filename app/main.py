@@ -148,6 +148,7 @@ def query_document(request: QueryRequest, db: Session = Depends(get_db)):
                 "content": chunk["content"][:200],
                 "similarity": chunk.get("similarity", 0),
                 "rrf_score": chunk.get("rrf_score", 0),
+                "rerank_score": chunk.get("rerank_score", 0),
             }
             for chunk in context_chunks
         ],

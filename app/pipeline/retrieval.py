@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.pipeline.embedding import embedding_service
 from app.pipeline.bm25_search import bm25_index
+from app.pipeline.reranker import reranker
 
 
 def vector_search(query: str, db: Session, top_k: int = 5) -> List[Dict]:
@@ -43,6 +44,7 @@ def vector_search(query: str, db: Session, top_k: int = 5) -> List[Dict]:
 def hybrid_search(query: str, db: Session, top_k: int = 5) -> List[Dict]:
     """
     Combine vector search (semantic) + BM25 (keyword) using Reciprocal Rank Fusion.
+    Then rerank results with cross-encoder for final precision.
     """
     # Rebuild BM25 index (in production, do this on ingest, not every query)
     bm25_index.build_index(db)
@@ -68,13 +70,16 @@ def hybrid_search(query: str, db: Session, top_k: int = 5) -> List[Dict]:
         if chunk_id not in chunk_data:
             chunk_data[chunk_id] = chunk
 
-    # Sort by RRF score and return top_k
-    sorted_ids = sorted(rrf_scores.keys(), key=lambda x: rrf_scores[x], reverse=True)[:top_k]
+    # Get more candidates than needed — reranker will pick the best
+    sorted_ids = sorted(rrf_scores.keys(), key=lambda x: rrf_scores[x], reverse=True)[:top_k * 2]
 
-    results = []
+    candidates = []
     for chunk_id in sorted_ids:
         chunk = chunk_data[chunk_id]
         chunk["rrf_score"] = round(rrf_scores[chunk_id], 4)
-        results.append(chunk)
+        candidates.append(chunk)
 
-    return results
+    # Rerank candidates with cross-encoder for final precision
+    reranked = reranker.rerank(query, candidates, top_k=top_k)
+
+    return reranked
