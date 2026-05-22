@@ -17,6 +17,7 @@ from app.pipeline.retrieval import vector_search, hybrid_search
 from app.evaluation.ragas_eval import rag_evaluator
 from app.evaluation.latency_tracker import LatencyTracker
 from app.evaluation.cost_tracker import cost_tracker
+from app.models.schemas import Base, Document, Chunk, QueryLog
 
 
 app = FastAPI(
@@ -163,7 +164,28 @@ async def query_document(request: QueryRequest, db: Session = Depends(get_db)):
         model_id=llm_response["model_used"],
         input_tokens=llm_response["input_tokens"],
         output_tokens=llm_response["output_tokens"],
+
+
     )
+
+
+    # Step 6: Store metrics in query_logs
+    query_log = QueryLog(
+        query=request.query,
+        response=llm_response["answer"],
+        model_used=llm_response["model_used"],
+        latency_ms=tracker.get_total(),
+        token_count=llm_response["input_tokens"] + llm_response["output_tokens"],
+        cost=query_cost["total_cost_usd"],
+        retrieval_scores={
+            "num_sources": len(context_chunks),
+            "top_similarity": context_chunks[0].get("similarity", 0) if context_chunks else 0,
+            "top_rerank_score": context_chunks[0].get("rerank_score", 0) if context_chunks else 0,
+        },
+        evaluation_scores=eval_scores,
+    )
+    db.add(query_log)
+    db.commit()
 
     return {
         "question": request.query,
@@ -185,5 +207,29 @@ async def query_document(request: QueryRequest, db: Session = Depends(get_db)):
                 "rerank_score": chunk.get("rerank_score", 0),
             }
             for chunk in context_chunks
+        ],
+    }
+
+
+@app.get("/metrics")
+async def get_metrics(limit: int = 10, db: Session = Depends(get_db)):
+    """Get recent query logs with all metrics."""
+    from app.models.schemas import QueryLog
+    logs = db.query(QueryLog).order_by(QueryLog.created_at.desc()).limit(limit).all()
+
+    return {
+        "total_queries": db.query(QueryLog).count(),
+        "recent_queries": [
+            {
+                "id": str(log.id),
+                "query": log.query,
+                "model_used": log.model_used,
+                "latency_ms": log.latency_ms,
+                "token_count": log.token_count,
+                "cost": log.cost,
+                "evaluation_scores": log.evaluation_scores,
+                "created_at": str(log.created_at),
+            }
+            for log in logs
         ],
     }
