@@ -237,7 +237,12 @@ async def get_metrics(limit: int = 10, db: Session = Depends(get_db)):
 
 @app.post("/query/agent")
 async def query_with_agent(request: QueryRequest):
-    """Query using LangGraph agent pipeline."""
+    """Query using LangGraph agent pipeline with self-optimization."""
+    from app.evaluation.latency_tracker import LatencyTracker
+
+    tracker = LatencyTracker()
+    tracker.start("total_pipeline")
+
     # Run the graph
     result = rag_pipeline.invoke({
         "query": request.query,
@@ -245,15 +250,19 @@ async def query_with_agent(request: QueryRequest):
         "chunks": [],
         "answer": "",
         "model_used": "",
-        "latency": {},
-        "cost": {},
         "evaluation": {},
+        "retry_count": 0,
     })
+
+    tracker.end("total_pipeline")
 
     return {
         "question": request.query,
         "answer": result["answer"],
         "model_used": result["model_used"],
+        "evaluation": result["evaluation"],
+        "was_retried": result["retry_count"] > 0,
+        "latency": tracker.get_report(),
         "num_sources": len(result["chunks"]),
         "sources": [
             {"content": chunk["content"][:200]}
