@@ -18,6 +18,7 @@ from app.evaluation.ragas_eval import rag_evaluator
 from app.evaluation.latency_tracker import LatencyTracker
 from app.evaluation.cost_tracker import cost_tracker
 from app.models.schemas import Base, Document, Chunk, QueryLog
+from app.agents.coordinator import rag_pipeline
 
 
 app = FastAPI(
@@ -231,5 +232,31 @@ async def get_metrics(limit: int = 10, db: Session = Depends(get_db)):
                 "created_at": str(log.created_at),
             }
             for log in logs
+        ],
+    }
+
+@app.post("/query/agent")
+async def query_with_agent(request: QueryRequest):
+    """Query using LangGraph agent pipeline."""
+    # Run the graph
+    result = rag_pipeline.invoke({
+        "query": request.query,
+        "top_k": request.top_k,
+        "chunks": [],
+        "answer": "",
+        "model_used": "",
+        "latency": {},
+        "cost": {},
+        "evaluation": {},
+    })
+
+    return {
+        "question": request.query,
+        "answer": result["answer"],
+        "model_used": result["model_used"],
+        "num_sources": len(result["chunks"]),
+        "sources": [
+            {"content": chunk["content"][:200]}
+            for chunk in result["chunks"]
         ],
     }
