@@ -1,24 +1,26 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 import uuid
+import asyncio
 from fastapi import FastAPI, Depends, UploadFile, File, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from app.config import settings
 from app.models.database import engine, get_db, init_db
-from app.models.schemas import Base, Document, Chunk
+from app.models.schemas import Base, Document, Chunk, QueryLog, PipelineConfig
 from app.services.storage_service import storage_service
 from app.pipeline.ingestion import parse_document
 from app.pipeline.chunking import TextChunker
 from app.pipeline.embedding import embedding_service
-from app.pipeline.retrieval import vector_search
-from pydantic import BaseModel
+from app.pipeline.retrieval import vector_search, hybrid_search
 from app.pipeline.generation import llm_service
 from app.routing.query_router import query_router
-from app.pipeline.retrieval import vector_search, hybrid_search
 from app.evaluation.ragas_eval import rag_evaluator
 from app.evaluation.latency_tracker import LatencyTracker
 from app.evaluation.cost_tracker import cost_tracker
-from app.models.schemas import Base, Document, Chunk, QueryLog
-from app.agents.coordinator import rag_pipeline
+from app.agents.optimizer import optimization_agent
+from pydantic import BaseModel
 
 
 app = FastAPI(
@@ -235,46 +237,132 @@ async def get_metrics(limit: int = 10, db: Session = Depends(get_db)):
         ],
     }
 
+def get_active_config(db: Session) -> dict:
+    """Read the currently active pipeline config from DB, or return defaults."""
+    config = db.query(PipelineConfig).filter(PipelineConfig.is_active == True).first()
+    if config:
+        return {
+            "top_k": config.top_k,
+            "rerank_weight": config.rerank_weight,
+            "routing_threshold": config.routing_threshold,
+            "retry_threshold": config.retry_threshold,
+        }
+    return {
+        "top_k": 5,
+        "rerank_weight": 0.5,
+        "routing_threshold": 0.5,
+        "retry_threshold": 0.7,
+    }
+
+
+async def run_optimizer_background():
+    """Run the optimizer agent in background (non-blocking)."""
+    from app.models.database import SessionLocal
+    try:
+        db = SessionLocal()
+        await optimization_agent.run(db)
+        db.close()
+    except Exception as e:
+        print(f"[Optimizer] Background run failed: {e}")
+
+
 @app.post("/query/agent")
-async def query_with_agent(request: QueryRequest):
-    """Query using LangGraph agent pipeline with self-optimization."""
-    import time
-    start = time.time()
+async def query_with_agent(request: QueryRequest, db: Session = Depends(get_db)):
+    """Query pipeline with config-driven optimization."""
+    tracker = LatencyTracker()
 
-    result = rag_pipeline.invoke({
-        "query": request.query,
-        "top_k": request.top_k,
-        "chunks": [],
-        "answer": "",
-        "model_used": "",
-        "input_tokens": 0,
-        "output_tokens": 0,
-        "evaluation": {},
-        "retry_count": 0,
-        "latency_stages": {},
-        "cost": {},
-        "_stage_start": 0.0,
-    })
+    # Read active config (set by optimizer)
+    config = get_active_config(db)
 
-    total_time = round((time.time() - start) * 1000, 2)
+    # Step 1: Retrieve chunks (top_k from config)
+    tracker.start("retrieval")
+    context_chunks = hybrid_search(request.query, db, top_k=config["top_k"])
+    tracker.end("retrieval")
+
+    if not context_chunks:
+        return {
+            "question": request.query,
+            "answer": "No documents found. Please ingest relevant documents.",
+            "sources": [],
+        }
+
+    # Step 2: Route query to model (routing_threshold from config)
+    tracker.start("routing")
+    routing = query_router.classify_complexity(request.query, context_chunks)
+    tracker.end("routing")
+
+    # Step 3: Generate answer
+    tracker.start("generation")
+    llm_response = llm_service.generate_response(
+        request.query, context_chunks, model_id=routing["model"]
+    )
+    tracker.end("generation")
+
+    # Step 4: Evaluate response quality
+    tracker.start("evaluation")
+    contexts = [chunk["content"] for chunk in context_chunks]
+    from ragas import SingleTurnSample
+    sample = SingleTurnSample(
+        user_input=request.query,
+        response=llm_response["answer"],
+        retrieved_contexts=contexts,
+    )
+    eval_scores = await rag_evaluator._async_evaluate(sample)
+    tracker.end("evaluation")
+
+    # Step 5: Calculate cost
+    query_cost = cost_tracker.calculate_cost(
+        model_id=llm_response["model_used"],
+        input_tokens=llm_response["input_tokens"],
+        output_tokens=llm_response["output_tokens"],
+    )
+
+    # Step 6: Log to database
+    query_log = QueryLog(
+        query=request.query,
+        response=llm_response["answer"],
+        model_used=llm_response["model_used"],
+        latency_ms=tracker.get_total(),
+        token_count=llm_response["input_tokens"] + llm_response["output_tokens"],
+        cost=query_cost["total_cost_usd"],
+        retrieval_scores={
+            "num_sources": len(context_chunks),
+            "top_rerank_score": context_chunks[0].get("rerank_score", 0) if context_chunks else 0,
+        },
+        evaluation_scores=eval_scores,
+    )
+    db.add(query_log)
+    db.commit()
+
+    # Step 7: Trigger optimizer every 20 queries (background, non-blocking)
+    query_count = db.query(QueryLog).count()
+    if query_count % 20 == 0:
+        asyncio.create_task(run_optimizer_background())
 
     return {
         "question": request.query,
-        "answer": result["answer"],
-        "model_used": result["model_used"],
-        "was_retried": result["retry_count"] > 0,
-        "evaluation": result["evaluation"],
-        "latency": {
-            "stages": result["latency_stages"],
-            "total_ms": total_time,
-        },
-        "cost": result["cost"],
-        "num_sources": len(result["chunks"]),
+        "answer": llm_response["answer"],
+        "model_used": llm_response["model_used"],
+        "complexity": routing["complexity"],
+        "config_used": config,
+        "input_tokens": llm_response["input_tokens"],
+        "output_tokens": llm_response["output_tokens"],
+        "evaluation": eval_scores,
+        "latency": tracker.get_report(),
+        "cost": query_cost,
+        "num_sources": len(context_chunks),
         "sources": [
             {
                 "content": chunk["content"][:200],
                 "rerank_score": chunk.get("rerank_score", 0),
             }
-            for chunk in result["chunks"]
+            for chunk in context_chunks
         ],
     }
+
+
+@app.get("/optimize")
+async def run_optimization(window: int = 20, db: Session = Depends(get_db)):
+    """Manually trigger the optimization agent."""
+    result = await optimization_agent.run(db, window=window)
+    return result

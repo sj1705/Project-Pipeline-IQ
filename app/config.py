@@ -29,6 +29,7 @@ class Settings(BaseSettings):
 
     class Config:
         env_file = ".env"
+        extra = "ignore"  # Allow LangSmith + other env vars
 
 
 settings = Settings()

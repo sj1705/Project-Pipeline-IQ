@@ -69,6 +69,7 @@ class PipelineConfig(Base):
     top_k = Column(Integer, default=5)
     rerank_weight = Column(Float, default=0.5)
     routing_threshold = Column(Float, default=0.5)
+    retry_threshold = Column(Float, default=0.7)
     is_active = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
