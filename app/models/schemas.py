@@ -75,3 +75,15 @@ class PipelineConfig(Base):
 
     def __repr__(self):
         return f"<PipelineConfig v{self.version} active={self.is_active}>"
+
+class QueryCache(Base):
+    __tablename__ = "query_cache"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    question = Column(Text, nullable=False)
+    embedding = Column(Vector(1024), nullable=False)
+    response = Column(JSON, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<QueryCache {self.question[:50]}>"

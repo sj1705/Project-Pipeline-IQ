@@ -21,6 +21,8 @@ from app.evaluation.latency_tracker import LatencyTracker
 from app.evaluation.cost_tracker import cost_tracker
 from app.agents.optimizer import optimization_agent
 from pydantic import BaseModel
+from app.models.schemas import Base, Document, Chunk, QueryLog, PipelineConfig, QueryCache
+from sqlalchemy import text as sql_text
 
 
 app = FastAPI(
@@ -85,6 +87,10 @@ async def ingest_document(file: UploadFile = File(...), db: Session = Depends(ge
     db.commit()
     db.refresh(doc)
 
+        # Invalidate query cache — new document means old answers may be stale
+    db.execute(sql_text("TRUNCATE TABLE query_cache"))
+    db.commit()
+
     # Save chunks + embeddings to DB
     for i, (chunk_text, embedding) in enumerate(zip(chunks, embeddings)):
         chunk = Chunk(
@@ -111,6 +117,10 @@ async def ingest_document(file: UploadFile = File(...), db: Session = Depends(ge
 class QueryRequest(BaseModel):
     query: str
     top_k: int = 5
+
+
+class AgentQueryRequest(BaseModel):
+    query: str
 
 @app.post("/search")
 async def search_chunks(request: QueryRequest, db: Session = Depends(get_db)):
@@ -267,12 +277,36 @@ async def run_optimizer_background():
 
 
 @app.post("/query/agent")
-async def query_with_agent(request: QueryRequest, db: Session = Depends(get_db)):
-    """Query pipeline with config-driven optimization."""
+async def query_with_agent(request: AgentQueryRequest, db: Session = Depends(get_db)):
+    """Query pipeline with config-driven optimization. Config (top_k etc) is managed by optimizer, not user."""
     tracker = LatencyTracker()
 
     # Read active config (set by optimizer)
     config = get_active_config(db)
+
+    # Check semantic cache
+    from app.pipeline.embedding import embedding_service
+    query_embedding = embedding_service.generate_embedding(request.query)
+
+    # Search for similar cached question (cosine similarity > 0.95)
+    from sqlalchemy import text as sql_text
+    cache_result = db.execute(
+        sql_text("""
+            SELECT question, response, 1 - (embedding <=> :embedding) as similarity
+            FROM query_cache
+            WHERE 1 - (embedding <=> :embedding) > 0.95
+            ORDER BY similarity DESC
+            LIMIT 1
+        """),
+        {"embedding": str(query_embedding)},
+    ).fetchone()
+
+    if cache_result:
+        cached_response = cache_result.response
+        cached_response["from_cache"] = True
+        cached_response["matched_query"] = cache_result.question
+        cached_response["similarity"] = round(cache_result.similarity, 4)
+        return cached_response
 
     # Step 1: Retrieve chunks (top_k from config)
     tracker.start("retrieval")
@@ -339,7 +373,8 @@ async def query_with_agent(request: QueryRequest, db: Session = Depends(get_db))
     if query_count % 20 == 0:
         asyncio.create_task(run_optimizer_background())
 
-    return {
+    # Build response
+    response = {
         "question": request.query,
         "answer": llm_response["answer"],
         "model_used": llm_response["model_used"],
@@ -359,6 +394,18 @@ async def query_with_agent(request: QueryRequest, db: Session = Depends(get_db))
             for chunk in context_chunks
         ],
     }
+
+    # Store in semantic cache
+    cache_entry = QueryCache(
+        question=request.query,
+        embedding=query_embedding,
+        response=response,
+    )
+    db.add(cache_entry)
+    db.commit()
+
+    response["from_cache"] = False
+    return response
 
 
 @app.get("/optimize")
