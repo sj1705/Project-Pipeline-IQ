@@ -20,6 +20,7 @@ from app.evaluation.ragas_eval import rag_evaluator
 from app.evaluation.latency_tracker import LatencyTracker
 from app.evaluation.cost_tracker import cost_tracker
 from app.agents.optimizer import optimization_agent
+from app.services.ab_test_service import ab_test_service
 from pydantic import BaseModel
 from app.models.schemas import Base, Document, Chunk, QueryLog, PipelineConfig, QueryCache
 from sqlalchemy import text as sql_text
@@ -248,21 +249,8 @@ async def get_metrics(limit: int = 10, db: Session = Depends(get_db)):
     }
 
 def get_active_config(db: Session) -> dict:
-    """Read the currently active pipeline config from DB, or return defaults."""
-    config = db.query(PipelineConfig).filter(PipelineConfig.is_active == True).first()
-    if config:
-        return {
-            "top_k": config.top_k,
-            "rerank_weight": config.rerank_weight,
-            "routing_threshold": config.routing_threshold,
-            "retry_threshold": config.retry_threshold,
-        }
-    return {
-        "top_k": 5,
-        "rerank_weight": 0.5,
-        "routing_threshold": 0.5,
-        "retry_threshold": 0.7,
-    }
+    """Read config via A/B test service — returns which config to use and version."""
+    return ab_test_service.get_test_state(db)
 
 
 async def run_optimizer_background():
@@ -281,8 +269,10 @@ async def query_with_agent(request: AgentQueryRequest, db: Session = Depends(get
     """Query pipeline with config-driven optimization. Config (top_k etc) is managed by optimizer, not user."""
     tracker = LatencyTracker()
 
-    # Read active config (set by optimizer)
-    config = get_active_config(db)
+    # Read active config (via A/B test service)
+    test_state = get_active_config(db)
+    config = test_state["use_config"]
+    config_version = test_state["config_version"]
 
     # Check semantic cache
     from app.pipeline.embedding import embedding_service
@@ -364,6 +354,7 @@ async def query_with_agent(request: AgentQueryRequest, db: Session = Depends(get
             "top_rerank_score": context_chunks[0].get("rerank_score", 0) if context_chunks else 0,
         },
         evaluation_scores=eval_scores,
+        config_version=config_version,
     )
     db.add(query_log)
     db.commit()
@@ -405,6 +396,11 @@ async def query_with_agent(request: AgentQueryRequest, db: Session = Depends(get
     db.commit()
 
     response["from_cache"] = False
+    response["config_version"] = config_version
+    if test_state.get("ab_status"):
+        response["ab_test"] = test_state["ab_status"]
+    if test_state.get("ab_result"):
+        response["ab_result"] = test_state["ab_result"]
     return response
 
 
@@ -413,3 +409,10 @@ async def run_optimization(window: int = 20, db: Session = Depends(get_db)):
     """Manually trigger the optimization agent."""
     result = await optimization_agent.run(db, window=window)
     return result
+
+
+@app.get("/ab-test")
+async def get_ab_test_status(db: Session = Depends(get_db)):
+    """Check current A/B test status."""
+    test_state = ab_test_service.get_test_state(db)
+    return test_state

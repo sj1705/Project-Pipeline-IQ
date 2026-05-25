@@ -53,6 +53,7 @@ class QueryLog(Base):
     cost = Column(Float, nullable=True)
     retrieval_scores = Column(JSON, nullable=True)
     evaluation_scores = Column(JSON, nullable=True)
+    config_version = Column(Integer, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
     def __repr__(self):
