@@ -8,7 +8,7 @@ Most RAG systems are static — you set chunk_size, top_k, and hope for the best
 
 1. Every query is evaluated for quality (RAGAS), timed for latency, and tracked for cost
 2. Every 20 queries, an LLM-powered optimizer agent analyzes trends
-3. The optimizer proposes config changes (more chunks? different model routing?)
+3. The optimizer proposes config changes (different model routing? different top_k?)
 4. Changes are A/B tested against the current config
 5. Winner is auto-promoted — the pipeline gets better over time
 
