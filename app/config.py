@@ -21,6 +21,12 @@ class Settings(BaseSettings):
     llm_model_id: str = "anthropic.claude-3-haiku-20240307-v1:0"
     llm_model_complex: str = "anthropic.claude-3-sonnet-20240229-v1:0"
 
+    # A/B Testing
+    ab_test_queries_per_config: int = 10
+
+    # Optimizer trigger
+    optimizer_trigger_every: int = 10
+
     # AWS
     aws_region: str = "ap-south-1"
     aws_access_key_id: str = ""

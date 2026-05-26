@@ -27,3 +27,13 @@ Thumbs.db
 .pytest_cache/
 htmlcov/
 .coverage
+
+#Test DATA sets
+Dataset/
+
+# Benchmark results
+benchmark_results.json
+benchmark_v2_results.json
+
+# Postman
+postman_openapi.json

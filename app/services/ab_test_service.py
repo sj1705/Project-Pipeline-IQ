@@ -2,6 +2,7 @@ from typing import Dict
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
 from app.models.schemas import PipelineConfig, QueryLog
+from app.config import settings
 
 
 class ABTestService:
@@ -14,7 +15,7 @@ class ABTestService:
     - After enough data (10 queries per config) → compare and promote winner
     """
 
-    QUERIES_PER_CONFIG = 10  # Need this many queries before comparing
+    QUERIES_PER_CONFIG = settings.ab_test_queries_per_config
 
     def get_test_state(self, db: Session) -> Dict:
         """
@@ -28,11 +29,12 @@ class ABTestService:
             .first()
         )
 
-        # Get latest proposed (inactive) config
+        # Get oldest proposed (inactive) config — the one that's been testing longest
+        from sqlalchemy import asc
         proposed_config = (
             db.query(PipelineConfig)
             .filter(PipelineConfig.is_active == False)
-            .order_by(desc(PipelineConfig.version))
+            .order_by(asc(PipelineConfig.version))
             .first()
         )
 
@@ -119,19 +121,17 @@ class ABTestService:
             self._promote_config(db, proposed_version)
             winner_version = proposed_version
             winner_label = "proposed"
+            winner_config = self._config_to_dict(proposed_config)
         else:
-            # Active wins — discard proposed
+            # Active/defaults win — discard proposed
             self._discard_config(db, proposed_version)
             winner_version = active_version
             winner_label = "active"
-
-        winner_config_obj = db.query(PipelineConfig).filter(
-            PipelineConfig.version == winner_version
-        ).first()
+            winner_config = self._config_to_dict(active_config) if active_config else self._defaults()
 
         return {
             "version": winner_version,
-            "config": self._config_to_dict(winner_config_obj) if winner_config_obj else self._defaults(),
+            "config": winner_config,
             "active_metrics": active_metrics,
             "proposed_metrics": proposed_metrics,
             "active_score": round(active_score, 4),

@@ -1,0 +1,402 @@
+[
+  {
+    "question": "Who is the licensor?",
+    "latency_ms": 4815.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the effective date?",
+    "latency_ms": 7184.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the governing law?",
+    "latency_ms": 5370.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the term length?",
+    "latency_ms": 13252.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Is there an arbitration clause?",
+    "latency_ms": 9827.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the notice period?",
+    "latency_ms": 13288.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Who are the parties?",
+    "latency_ms": 13725.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the territory covered?",
+    "latency_ms": 10869.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Is this agreement exclusive?",
+    "latency_ms": 10637.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the payment frequency?",
+    "latency_ms": 10604.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Does this contract auto-renew?",
+    "latency_ms": 14515.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Is there a non-compete clause?",
+    "latency_ms": 49905.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Are there royalty fees?",
+    "latency_ms": 14324.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Is there a force majeure clause?",
+    "latency_ms": 11388.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Is there a severability clause?",
+    "latency_ms": 16135.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Compare the termination rights of both parties and explain which party has more favorable exit conditions.",
+    "latency_ms": 11255.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-sonnet-20240229-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Analyze the relationship between the payment terms and the termination provisions \u2014 what happens to unpaid fees if the contract is terminated early?",
+    "latency_ms": 14528.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "How do the confidentiality obligations interact with the intellectual property rights after the agreement expires?",
+    "latency_ms": 11917.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the cumulative financial obligations of the licensee considering royalties, minimum payments, and any penalties described across all sections?",
+    "latency_ms": 15713.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Explain how the indemnification provisions, limitation of liability, and insurance requirements work together to allocate risk between the parties.",
+    "latency_ms": 13664.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "If a force majeure event occurs that lasts longer than 90 days, what are the combined effects on termination rights, payment obligations, and performance deadlines?",
+    "latency_ms": 17659.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Compare and contrast the obligations of the franchisor versus the franchisee in terms of training, marketing, and quality control requirements.",
+    "latency_ms": 11262.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What happens to intellectual property rights, confidential information, and non-compete restrictions if the agreement is terminated due to a material breach by the licensor?",
+    "latency_ms": 12283.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Analyze the dispute resolution mechanism \u2014 what steps must be taken before litigation, and how does the governing law choice affect enforcement?",
+    "latency_ms": 13614.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "How do the renewal terms, price adjustment mechanisms, and performance metrics interact to determine whether the agreement continues beyond the initial term?",
+    "latency_ms": 13458.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the differences between the termination for convenience and termination for cause provisions?",
+    "latency_ms": 12722.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Compare the warranty obligations versus the disclaimer of warranties \u2014 are there contradictions?",
+    "latency_ms": 29528.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "How do the exclusivity provisions limit the licensor's ability to compete versus the licensee's non-compete obligations?",
+    "latency_ms": 13730.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Contrast the confidentiality obligations during the agreement versus the survival period after termination.",
+    "latency_ms": 13464.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the relationship between the minimum revenue commitment and the termination rights if minimums are not met?",
+    "latency_ms": 102111.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Compare the remedies available for IP infringement versus remedies for payment default.",
+    "latency_ms": 10906.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "How do the assignment restrictions differ for each party, and what implications does this have for mergers or acquisitions?",
+    "latency_ms": 15064.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Analyze whether the limitation of liability cap is consistent with the indemnification obligations \u2014 could indemnification exceed the liability cap?",
+    "latency_ms": 16583.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Summarize all the financial obligations of the licensee across the entire agreement, including one-time fees, recurring payments, and conditional payments.",
+    "latency_ms": 12476.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the three most significant risks for the licensee in this agreement, considering termination, IP ownership, and financial obligations together?",
+    "latency_ms": 14408.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "If both parties want to exit this agreement amicably, what is the most efficient path considering notice periods, transition obligations, and post-termination restrictions?",
+    "latency_ms": 17264.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Evaluate whether the non-compete and non-solicitation restrictions would likely be enforceable given their scope, duration, and geographic limitations.",
+    "latency_ms": 12632.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What regulatory compliance failures could trigger termination, and how do the indemnification provisions protect each party in that scenario?",
+    "latency_ms": 12849.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Construct a timeline of all key obligations and deadlines from contract execution through the first renewal period.",
+    "latency_ms": 12148.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the potential conflicts between the exclusivity grant and the licensor's retained rights?",
+    "latency_ms": 12610.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "How would a change of control event affect the rights, obligations, and termination options available to each party?",
+    "latency_ms": 15904.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Identify all provisions that survive termination and explain how they create ongoing obligations after the agreement ends.",
+    "latency_ms": 14684.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the total maximum liability exposure for each party considering direct damages, indemnification, IP claims, and any uncapped obligations?",
+    "latency_ms": 13488.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Across all the contracts in the system, what are the most common termination provisions?",
+    "latency_ms": 18085.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Which contracts have the most restrictive non-compete clauses, and what makes them more restrictive?",
+    "latency_ms": 12268.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Compare the IP ownership models across different agreement types \u2014 license vs development vs franchise.",
+    "latency_ms": 11625.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the range of royalty rates across all agreements, and what factors seem to influence higher versus lower rates?",
+    "latency_ms": 14206.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-sonnet-20240229-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Which agreements provide the strongest protections for confidential information, and what specific mechanisms do they use?",
+    "latency_ms": 12935.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Across all contracts, what are the typical cure periods for material breach, and are there outliers?",
+    "latency_ms": 13466.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Compare how different contract types handle force majeure \u2014 do franchise agreements differ from license agreements in their approach?",
+    "latency_ms": 11094.0,
+    "faithfulness": null,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  }
+]

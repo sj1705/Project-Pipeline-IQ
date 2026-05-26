@@ -33,7 +33,7 @@ class OptimizerState(TypedDict):
 # --- Tools the agent can use ---
 
 @tool
-def read_query_metrics(window: int = 20) -> str:
+def read_query_metrics(window: int = 10) -> str:
     """
     Read performance metrics from the last N queries.
     Returns: avg faithfulness, avg latency, avg cost, model distribution.
@@ -225,7 +225,7 @@ class OptimizerAgent:
     def __init__(self):
         # LLM for the agent (cheap + fast)
         self.llm = ChatBedrock(
-            model_id=settings.llm_model_complex,  # Haiku
+            model_id=settings.llm_model_complex,  # Sonnet — better reasoning for optimization
             region_name=settings.aws_region,
             model_kwargs={"temperature": 0},
         )

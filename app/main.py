@@ -62,7 +62,7 @@ async def ingest_document(file: UploadFile = File(...), db: Session = Depends(ge
     filename = file.filename
     file_type = filename.rsplit(".", 1)[-1].lower()
 
-    if file_type not in ["pdf", "docx", "html"]:
+    if file_type not in ["pdf", "docx", "html", "txt", "xlsx"]:
         raise HTTPException(status_code=400, detail=f"Unsupported file type: {file_type}")
 
     # Save file locally
@@ -124,7 +124,7 @@ async def ingest_multiple(files: list[UploadFile] = File(...), db: Session = Dep
         filename = file.filename
         file_type = filename.rsplit(".", 1)[-1].lower()
 
-        if file_type not in ["pdf", "docx", "html"]:
+        if file_type not in ["pdf", "docx", "html", "txt", "xlsx"]:
             results.append({"filename": filename, "status": "skipped", "reason": f"Unsupported type: {file_type}"})
             continue
 
@@ -324,6 +324,70 @@ async def run_optimizer_background():
         print(f"[Optimizer] Background run failed: {e}")
 
 
+async def run_eval_and_log_background(
+    query: str,
+    answer: str,
+    contexts: list,
+    model_used: str,
+    latency_ms: float,
+    input_tokens: int,
+    output_tokens: int,
+    cost: float,
+    context_chunks: list,
+    config_version: int,
+):
+    """Run RAGAS evaluation and log to DB in background. User doesn't wait for this."""
+    from app.models.database import SessionLocal
+    try:
+        db = SessionLocal()
+
+        # Evaluate
+        try:
+            from ragas import SingleTurnSample
+            sample = SingleTurnSample(
+                user_input=query,
+                response=answer,
+                retrieved_contexts=contexts,
+            )
+            eval_scores = await rag_evaluator._async_evaluate(sample)
+        except Exception as e:
+            eval_scores = {"faithfulness": 0.0, "answer_relevancy": 0.0, "context_precision": 0.0, "error": str(e)[:100]}
+
+        # Log to DB
+        query_log = QueryLog(
+            query=query,
+            response=answer,
+            model_used=model_used,
+            latency_ms=latency_ms,
+            token_count=input_tokens + output_tokens,
+            cost=cost,
+            retrieval_scores={
+                "num_sources": len(context_chunks),
+                "top_rerank_score": context_chunks[0].get("rerank_score", 0) if context_chunks else 0,
+            },
+            evaluation_scores=eval_scores,
+            config_version=config_version,
+        )
+        db.add(query_log)
+        db.commit()
+
+        # Trigger optimizer if needed (skip if A/B test is still running)
+        query_count = db.query(QueryLog).count()
+        if query_count % settings.optimizer_trigger_every == 0:
+            # Check if there's an unfinished A/B test
+            from app.models.schemas import PipelineConfig
+            proposed = db.query(PipelineConfig).filter(PipelineConfig.is_active == False).first()
+            if not proposed:
+                # No pending A/B test — safe to propose new config
+                await optimization_agent.run(db)
+            else:
+                print(f"[Optimizer] Skipped — A/B test still running for config v{proposed.version}")
+
+        db.close()
+    except Exception as e:
+        print(f"[Background Eval] Failed: {e}")
+
+
 @app.post("/query-optimized")
 async def query_with_agent(request: AgentQueryRequest, db: Session = Depends(get_db)):
     """Query pipeline with config-driven optimization. Config (top_k etc) is managed by optimizer, not user."""
@@ -338,10 +402,13 @@ async def query_with_agent(request: AgentQueryRequest, db: Session = Depends(get
     from app.pipeline.embedding import embedding_service
     query_embedding = embedding_service.generate_embedding(request.query)
 
+    # Clean expired cache entries (older than 1 hour)
+    db.execute(text("DELETE FROM query_cache WHERE created_at < NOW() - INTERVAL '1 hour'"))
+    db.commit()
+
     # Search for similar cached question (cosine similarity > 0.95)
-    from sqlalchemy import text as sql_text
     cache_result = db.execute(
-        sql_text("""
+        text("""
             SELECT question, response, 1 - (embedding <=> :embedding) as similarity
             FROM query_cache
             WHERE 1 - (embedding <=> :embedding) > 0.95
@@ -382,49 +449,14 @@ async def query_with_agent(request: AgentQueryRequest, db: Session = Depends(get
     )
     tracker.end("generation")
 
-    # Step 4: Evaluate response quality
-    tracker.start("evaluation")
-    contexts = [chunk["content"] for chunk in context_chunks]
-    from ragas import SingleTurnSample
-    sample = SingleTurnSample(
-        user_input=request.query,
-        response=llm_response["answer"],
-        retrieved_contexts=contexts,
-    )
-    eval_scores = await rag_evaluator._async_evaluate(sample)
-    tracker.end("evaluation")
-
-    # Step 5: Calculate cost
+    # Step 4: Calculate cost (fast, no API call)
     query_cost = cost_tracker.calculate_cost(
         model_id=llm_response["model_used"],
         input_tokens=llm_response["input_tokens"],
         output_tokens=llm_response["output_tokens"],
     )
 
-    # Step 6: Log to database
-    query_log = QueryLog(
-        query=request.query,
-        response=llm_response["answer"],
-        model_used=llm_response["model_used"],
-        latency_ms=tracker.get_total(),
-        token_count=llm_response["input_tokens"] + llm_response["output_tokens"],
-        cost=query_cost["total_cost_usd"],
-        retrieval_scores={
-            "num_sources": len(context_chunks),
-            "top_rerank_score": context_chunks[0].get("rerank_score", 0) if context_chunks else 0,
-        },
-        evaluation_scores=eval_scores,
-        config_version=config_version,
-    )
-    db.add(query_log)
-    db.commit()
-
-    # Step 7: Trigger optimizer every 20 queries (background, non-blocking)
-    query_count = db.query(QueryLog).count()
-    if query_count % 20 == 0:
-        asyncio.create_task(run_optimizer_background())
-
-    # Build response
+    # Build response immediately (don't wait for eval)
     response = {
         "question": request.query,
         "answer": llm_response["answer"],
@@ -433,7 +465,7 @@ async def query_with_agent(request: AgentQueryRequest, db: Session = Depends(get
         "config_used": config,
         "input_tokens": llm_response["input_tokens"],
         "output_tokens": llm_response["output_tokens"],
-        "evaluation": eval_scores,
+        "evaluation": "pending (async)",
         "latency": tracker.get_report(),
         "cost": query_cost,
         "num_sources": len(context_chunks),
@@ -461,6 +493,23 @@ async def query_with_agent(request: AgentQueryRequest, db: Session = Depends(get
         response["ab_test"] = test_state["ab_status"]
     if test_state.get("ab_result"):
         response["ab_result"] = test_state["ab_result"]
+
+    # Step 5: Fire evaluation + logging in background (non-blocking)
+    asyncio.create_task(
+        run_eval_and_log_background(
+            query=request.query,
+            answer=llm_response["answer"],
+            contexts=[chunk["content"] for chunk in context_chunks],
+            model_used=llm_response["model_used"],
+            latency_ms=tracker.get_total(),
+            input_tokens=llm_response["input_tokens"],
+            output_tokens=llm_response["output_tokens"],
+            cost=query_cost["total_cost_usd"],
+            context_chunks=context_chunks,
+            config_version=config_version,
+        )
+    )
+
     return response
 
 

@@ -1,0 +1,399 @@
+[
+  {
+    "question": "What is the effective date of this agreement?",
+    "latency_ms": 24774.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "When does this contract expire?",
+    "latency_ms": 28519.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Who are the parties involved in this agreement?",
+    "latency_ms": 33089.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the agreement date?",
+    "latency_ms": 55821.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What type of contract is this?",
+    "latency_ms": 33113.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the term of this agreement?",
+    "latency_ms": 39713.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Where was this contract executed?",
+    "latency_ms": 98060.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the purpose of this agreement?",
+    "latency_ms": 28523.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Is this agreement binding on successors and assigns?",
+    "latency_ms": 86037.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the definitions section key terms?",
+    "latency_ms": 64129.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the termination provisions?",
+    "latency_ms": 35848.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Can either party terminate for convenience?",
+    "latency_ms": 34471.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the notice period for termination?",
+    "latency_ms": 35088.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the renewal terms?",
+    "latency_ms": 43622.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Does the contract auto-renew?",
+    "latency_ms": 85112.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What happens upon termination of this agreement?",
+    "latency_ms": 46087.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Are there any survival clauses after termination?",
+    "latency_ms": 42621.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What constitutes a material breach?",
+    "latency_ms": 39575.0,
+    "faithfulness": 0.8,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the payment terms?",
+    "latency_ms": 38691.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Is there a minimum commitment or revenue guarantee?",
+    "latency_ms": 35547.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the pricing terms?",
+    "latency_ms": 56260.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Are there any royalty fees mentioned?",
+    "latency_ms": 27428.0,
+    "error": 500
+  },
+  {
+    "question": "What happens to payments upon termination?",
+    "latency_ms": 43441.0,
+    "faithfulness": 0.8,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Are there any late payment penalties?",
+    "latency_ms": 26033.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the compensation structure?",
+    "latency_ms": 32515.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Are there any audit rights for financial records?",
+    "latency_ms": 42965.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Is there an intellectual property assignment clause?",
+    "latency_ms": 39172.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Who owns the intellectual property created under this agreement?",
+    "latency_ms": 40186.0,
+    "faithfulness": 0.6667,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Are there any licensing rights granted?",
+    "latency_ms": 29605.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the IP indemnification terms?",
+    "latency_ms": 40441.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Are there restrictions on using the other party's trademarks?",
+    "latency_ms": 43858.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What happens to IP rights after termination?",
+    "latency_ms": 36788.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Is there a technology transfer clause?",
+    "latency_ms": 35115.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Are there any non-compete restrictions?",
+    "latency_ms": 34960.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the non-solicitation clause?",
+    "latency_ms": 49462.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the exclusivity provisions?",
+    "latency_ms": 44379.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the confidentiality obligations?",
+    "latency_ms": 41103.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "How long do confidentiality obligations last after termination?",
+    "latency_ms": 130805.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What information is considered confidential?",
+    "latency_ms": 37083.0,
+    "faithfulness": 0.75,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Are there any exceptions to confidentiality?",
+    "latency_ms": 36283.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the reporting obligations?",
+    "latency_ms": 39455.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Are there any performance milestones or KPIs?",
+    "latency_ms": 100793.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the limitation of liability?",
+    "latency_ms": 39245.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Are there any indemnification provisions?",
+    "latency_ms": 123591.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Is there a cap on damages?",
+    "latency_ms": 117404.0,
+    "faithfulness": 0.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What are the warranty provisions?",
+    "latency_ms": 48705.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Are there any disclaimers of warranty?",
+    "latency_ms": 35177.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "What is the governing law and jurisdiction?",
+    "latency_ms": 34366.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "How are disputes resolved under this contract?",
+    "latency_ms": 42539.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  },
+  {
+    "question": "Is there an arbitration clause?",
+    "latency_ms": 38523.0,
+    "faithfulness": 1.0,
+    "model_used": "anthropic.claude-3-haiku-20240307-v1:0",
+    "from_cache": false,
+    "num_sources": 5
+  }
+]
