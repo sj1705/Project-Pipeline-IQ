@@ -59,7 +59,7 @@ def run_sample_queries():
     print("\n📝 Running sample queries to populate metrics...")
     for q in queries:
         print(f"   Query: {q[:50]}...", end=" ")
-        resp = requests.post(f"{API_URL}/query/agent", json={"query": q})
+        resp = requests.post(f"{API_URL}/query-optimized", json={"query": q})
         if resp.status_code == 200:
             print("✅")
         else:

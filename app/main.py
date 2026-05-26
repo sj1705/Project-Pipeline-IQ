@@ -115,6 +115,66 @@ async def ingest_document(file: UploadFile = File(...), db: Session = Depends(ge
     }
 
 
+@app.post("/ingest/batch")
+async def ingest_multiple(files: list[UploadFile] = File(...), db: Session = Depends(get_db)):
+    """Upload and ingest multiple documents at once."""
+    results = []
+
+    for file in files:
+        filename = file.filename
+        file_type = filename.rsplit(".", 1)[-1].lower()
+
+        if file_type not in ["pdf", "docx", "html"]:
+            results.append({"filename": filename, "status": "skipped", "reason": f"Unsupported type: {file_type}"})
+            continue
+
+        try:
+            saved_path = storage_service.save_file(file, filename)
+            extracted_text = parse_document(saved_path, file_type)
+            chunks = chunker.chunk_text(extracted_text)
+            embeddings = embedding_service.generate_embeddings_batch(chunks)
+
+            doc = Document(
+                filename=filename,
+                file_type=file_type,
+                s3_path=saved_path,
+                chunk_config={"chunk_size": 512, "chunk_overlap": 50},
+            )
+            db.add(doc)
+            db.commit()
+            db.refresh(doc)
+
+            for i, (chunk_text, embedding) in enumerate(zip(chunks, embeddings)):
+                chunk = Chunk(
+                    document_id=doc.id,
+                    content=chunk_text,
+                    embedding=embedding,
+                    chunk_index=i,
+                    chunk_size=len(chunk_text),
+                    overlap=50,
+                )
+                db.add(chunk)
+            db.commit()
+
+            results.append({
+                "filename": filename,
+                "status": "success",
+                "document_id": str(doc.id),
+                "num_chunks": len(chunks),
+            })
+        except Exception as e:
+            results.append({"filename": filename, "status": "failed", "reason": str(e)})
+
+    # Invalidate cache — new documents ingested
+    db.execute(text("TRUNCATE TABLE query_cache"))
+    db.commit()
+
+    return {
+        "total_files": len(files),
+        "results": results,
+    }
+
+
 class QueryRequest(BaseModel):
     query: str
     top_k: int = 5
@@ -264,7 +324,7 @@ async def run_optimizer_background():
         print(f"[Optimizer] Background run failed: {e}")
 
 
-@app.post("/query/agent")
+@app.post("/query-optimized")
 async def query_with_agent(request: AgentQueryRequest, db: Session = Depends(get_db)):
     """Query pipeline with config-driven optimization. Config (top_k etc) is managed by optimizer, not user."""
     tracker = LatencyTracker()
@@ -416,3 +476,65 @@ async def get_ab_test_status(db: Session = Depends(get_db)):
     """Check current A/B test status."""
     test_state = ab_test_service.get_test_state(db)
     return test_state
+
+
+@app.get("/documents")
+async def list_documents(db: Session = Depends(get_db)):
+    """List all ingested documents."""
+    docs = db.query(Document).order_by(Document.ingested_at.desc()).all()
+    return {
+        "total_documents": len(docs),
+        "documents": [
+            {
+                "id": str(doc.id),
+                "filename": doc.filename,
+                "file_type": doc.file_type,
+                "ingested_at": str(doc.ingested_at),
+                "chunk_config": doc.chunk_config,
+            }
+            for doc in docs
+        ],
+    }
+
+
+@app.delete("/documents/{document_id}")
+async def delete_document(document_id: str, db: Session = Depends(get_db)):
+    """Delete a document, its chunks, and clear query cache."""
+    doc = db.query(Document).filter(Document.id == document_id).first()
+    if not doc:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    filename = doc.filename
+
+    # Delete chunks belonging to this document
+    chunks_deleted = db.query(Chunk).filter(Chunk.document_id == document_id).delete()
+
+    # Delete the document
+    db.delete(doc)
+
+    # Clear query cache (answers may reference this document's content)
+    db.execute(text("TRUNCATE TABLE query_cache"))
+
+    db.commit()
+
+    return {
+        "message": f"Document '{filename}' deleted successfully",
+        "chunks_deleted": chunks_deleted,
+        "cache_cleared": True,
+    }
+
+
+@app.delete("/documents")
+async def delete_all_documents(db: Session = Depends(get_db)):
+    """Delete ALL documents, chunks, and clear query cache."""
+    chunks_deleted = db.query(Chunk).delete()
+    docs_deleted = db.query(Document).delete()
+    db.execute(text("TRUNCATE TABLE query_cache"))
+    db.commit()
+
+    return {
+        "message": "All documents deleted",
+        "documents_deleted": docs_deleted,
+        "chunks_deleted": chunks_deleted,
+        "cache_cleared": True,
+    }

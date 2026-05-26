@@ -81,7 +81,7 @@ if page == "Pipeline Health":
         st.bar_chart(pd.Series(model_counts))
 
     else:
-        st.info("No queries yet. Use /query/agent to start logging data.")
+        st.info("No queries yet. Use /query-optimized to start logging data.")
 
     # A/B test status
     st.divider()

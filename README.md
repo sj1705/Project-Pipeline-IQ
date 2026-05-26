@@ -16,31 +16,31 @@ Most RAG systems are static — you set chunk_size, top_k, and hope for the best
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    USER QUERY                                 │
+│                    USER QUERY                               │
 └──────────────────────┬──────────────────────────────────────┘
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│  Semantic Cache (pgvector)                                    │
-│  Similar question asked before? → Return cached response      │
+│  Semantic Cache (pgvector)                                  │
+│  Similar question asked before? → Return cached response    │
 └──────────────────────┬──────────────────────────────────────┘
                        ▼ (cache miss)
 ┌─────────────────────────────────────────────────────────────┐
-│  Pipeline (config-driven)                                    │
-│  1. Read active config from DB (top_k, rerank_weight, etc)   │
-│  2. Hybrid Search: Vector + BM25 + RRF + Cross-encoder       │
-│  3. Route to Haiku/Sonnet based on query complexity           │
-│  4. Generate answer (AWS Bedrock)                             │
-│  5. Evaluate quality (RAGAS: faithfulness, relevancy)         │
-│  6. Track latency + cost                                      │
-│  7. Log everything to query_logs                              │
+│  Pipeline (config-driven)                                   │
+│  1. Read active config from DB (top_k, rerank_weight, etc)  │
+│  2. Hybrid Search: Vector + BM25 + RRF + Cross-encoder      │
+│  3. Route to Haiku/Sonnet based on query complexity         │
+│  4. Generate answer (AWS Bedrock)                           │
+│  5. Evaluate quality (RAGAS: faithfulness, relevancy)       │
+│  6. Track latency + cost                                    │
+│  7. Log everything to query_logs                            │
 └──────────────────────┬──────────────────────────────────────┘
                        ▼ (every 20 queries)
 ┌─────────────────────────────────────────────────────────────┐
-│  Optimizer Agent (LangGraph + Haiku)                          │
-│  - Reads metrics from query_logs                              │
-│  - Reads its own past decisions from pipeline_configs         │
-│  - Reasons about quality/speed/cost tradeoffs                 │
-│  - Proposes new config → A/B tested → winner promoted         │
+│  Optimizer Agent (LangGraph + Haiku)                        │
+│  - Reads metrics from query_logs                            │
+│  - Reads its own past decisions from pipeline_configs       │
+│  - Reasons about quality/speed/cost tradeoffs               │
+│  - Proposes new config → A/B tested → winner promoted       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -72,7 +72,7 @@ Most RAG systems are static — you set chunk_size, top_k, and hope for the best
 | POST | `/ingest` | Upload PDF/DOCX/HTML → chunk → embed → store |
 | POST | `/search` | Vector similarity search (raw) |
 | POST | `/query` | Full RAG pipeline (legacy, with RAGAS eval) |
-| POST | `/query/agent` | Config-driven pipeline + semantic cache + A/B testing |
+| POST | `/query-optimized` | Config-driven pipeline + semantic cache + A/B testing |
 | GET | `/optimize` | Manually trigger optimization agent |
 | GET | `/ab-test` | Check A/B test status |
 | GET | `/metrics` | View recent query logs + metrics |
