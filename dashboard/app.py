@@ -2,7 +2,8 @@ import streamlit as st
 import requests
 import pandas as pd
 
-API_URL = "http://127.0.0.1:8003"
+import os
+API_URL = os.environ.get("API_URL", "http://127.0.0.1:8003")
 
 st.set_page_config(page_title="PipelineIQ Dashboard", layout="wide")
 st.title("🔧 PipelineIQ — Self-Optimizing RAG Dashboard")
